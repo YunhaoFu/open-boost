@@ -7,6 +7,20 @@
   "bin": {
     "open-boost": "packages/cli/bin/open-boost.js"
   },
+  "files": [
+    "dist",
+    "packages",
+    "install.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/open-boost/open-boost.git"
+  },
   "scripts": {
     "build": "node packages/cli/bin/open-boost.js build",
     "status": "node packages/cli/bin/open-boost.js status",

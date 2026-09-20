@@ -9,7 +9,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { execSync } from "node:child_process";
-import { patchOpenCodeConfig } from "../../adapters/opencode/index.js";
+import { patchOpenCodeConfig, stripJsonComments } from "../../adapters/opencode/index.js";
 import { patchOmpConfig } from "../../adapters/omp/index.js";
 
 export type HarnessType = "omp" | "pi" | "opencode";
@@ -153,12 +153,20 @@ export function installHarness(
       filesInstalled.push(configFile + " (recursion depth verified >= 3)");
     } else if (harness === "pi") {
       // 1. Copy extension
-      const extSrc = path.join(targetDist, "extensions", "open-boost.ts");
-      if (fs.existsSync(extSrc) && paths.extensionsDir) {
+      if (paths.extensionsDir) {
         fs.mkdirSync(paths.extensionsDir, { recursive: true });
-        const extDest = path.join(paths.extensionsDir, "open-boost.ts");
-        fs.copyFileSync(extSrc, extDest);
-        filesInstalled.push(extDest);
+        const extSrcTs = path.join(targetDist, "extensions", "open-boost.ts");
+        const extSrcJs = path.join(targetDist, "extensions", "open-boost.js");
+        if (fs.existsSync(extSrcTs)) {
+          const extDestTs = path.join(paths.extensionsDir, "open-boost.ts");
+          fs.copyFileSync(extSrcTs, extDestTs);
+          filesInstalled.push(extDestTs);
+        }
+        if (fs.existsSync(extSrcJs)) {
+          const extDestJs = path.join(paths.extensionsDir, "open-boost.js");
+          fs.copyFileSync(extSrcJs, extDestJs);
+          filesInstalled.push(extDestJs);
+        }
       }
 
       // 2. Copy agents
@@ -173,6 +181,23 @@ export function installHarness(
       const skillDest = path.join(paths.skillsDir, "boost");
       copyDirRecursive(skillSrc, skillDest);
       filesInstalled.push(path.join(skillDest, "SKILL.md"));
+
+      // 4. Update ~/.pi/agent/settings.json to include skill if needed
+      const settingsPath = path.join(paths.configDir, "settings.json");
+      if (fs.existsSync(settingsPath)) {
+        try {
+          const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8")) as { skills?: string[] };
+          if (!settings.skills) settings.skills = [];
+          const skillEntry = "+skills/boost/SKILL.md";
+          if (!settings.skills.includes(skillEntry)) {
+            settings.skills.push(skillEntry);
+            fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf8");
+            filesInstalled.push(settingsPath + " (skill enabled)");
+          }
+        } catch {
+          // ignore settings json error
+        }
+      }
     } else if (harness === "opencode") {
       // 1. Copy agents
       const agentSrc = path.join(targetDist, "agents");
@@ -250,21 +275,21 @@ export function checkStatus(): Record<HarnessType, HarnessStatus> {
 
     let configReady = false;
     if (type === "omp") {
-      const cfg = path.join(info.configDir, "config.yml");
-      if (fs.existsSync(cfg)) {
-        const text = fs.readFileSync(cfg, "utf8");
-        configReady = /maxRecursionDepth:\s*([3-9]|\d{2,})/.test(text);
+      const configPath = path.join(info.configDir, "config.yml");
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, "utf8");
+        const depthMatch = content.match(/maxRecursionDepth:\s*(\d+)/);
+        configReady = depthMatch ? parseInt(depthMatch[1], 10) >= 3 : false;
       }
     } else if (type === "pi") {
-      const ext = path.join(info.configDir, "extensions", "open-boost.ts");
-      configReady = fs.existsSync(ext);
+      configReady = fs.existsSync(info.configDir);
     } else if (type === "opencode") {
-      const cfg = path.join(info.configDir, "opencode.jsonc");
-      if (fs.existsSync(cfg)) {
+      const configPath = path.join(info.configDir, "opencode.jsonc");
+      if (fs.existsSync(configPath)) {
         try {
-          const text = fs.readFileSync(cfg, "utf8").replace(/\/\/.*$/gm, "");
-          const parsed = JSON.parse(text) as { subagent_depth?: number; command?: { boost?: unknown } };
-          configReady = ((parsed.subagent_depth ?? 0) >= 3) && Boolean(parsed.command?.boost);
+          const content = fs.readFileSync(configPath, "utf8");
+          const conf = JSON.parse(stripJsonComments(content)) as { subagent_depth?: number };
+          configReady = !!(conf.subagent_depth && conf.subagent_depth >= 3);
         } catch {
           configReady = false;
         }

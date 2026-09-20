@@ -21,14 +21,39 @@ export interface OpenCodeConfig {
   [key: string]: unknown;
 }
 
+/**
+ * Strips comments from JSONC without corrupting URLs inside strings.
+ */
+export function stripJsonComments(text: string): string {
+  let insideString = false;
+  let result = "";
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+    if (char === '"' && text[i - 1] !== "\\") {
+      insideString = !insideString;
+      result += char;
+    } else if (!insideString && char === "/" && next === "/") {
+      while (i < text.length && text[i] !== "\n") i++;
+      if (i < text.length) result += "\n";
+    } else if (!insideString && char === "/" && next === "*") {
+      i += 2;
+      while (i < text.length && !(text[i] === "*" && text[i + 1] === "/")) i++;
+      i++;
+    } else {
+      result += char;
+    }
+  }
+  return result;
+}
+
 export function patchOpenCodeConfig(configPath: string): { changed: boolean; config: OpenCodeConfig } {
   let config: OpenCodeConfig = {};
 
   if (fs.existsSync(configPath)) {
     try {
       const content = fs.readFileSync(configPath, "utf8");
-      // strip comments if JSONC
-      const jsonContent = content.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+      const jsonContent = stripJsonComments(content);
       config = JSON.parse(jsonContent);
     } catch {
       config = {};
