@@ -74,7 +74,7 @@ open-boost install
 ### 方式二：源码安装
 
 ```bash
-git clone https://github.com/open-boost/open-boost.git
+git clone https://github.com/YunhaoFu/open-boost.git
 cd open-boost
 
 # 检查当前环境检测到的 harness 状态

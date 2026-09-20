@@ -73,7 +73,7 @@ open-boost install
 ### Option 2: From Source
 
 ```bash
-git clone https://github.com/open-boost/open-boost.git
+git clone https://github.com/YunhaoFu/open-boost.git
 cd open-boost
 
 # Check detected harnesses
