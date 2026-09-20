@@ -4,6 +4,8 @@
 >
 > Optimized for high-throughput Flash models (`gemini-3.8-flash`, `deepseek-v4.1-flash`, `qwen-2.5-coder-32b`).
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/open-boost.svg)](https://www.npmjs.com/package/open-boost)
