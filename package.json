@@ -1,0 +1,30 @@
+{
+  "name": "open-boost",
+  "version": "1.0.0",
+  "description": "Universal adversarial deep-reasoning multi-agent plugin for coding harnesses (Pi, OpenCode, OMP)",
+  "type": "module",
+  "main": "packages/core/src/index.js",
+  "bin": {
+    "open-boost": "packages/cli/bin/open-boost.js"
+  },
+  "scripts": {
+    "build": "node packages/cli/bin/open-boost.js build",
+    "status": "node packages/cli/bin/open-boost.js status",
+    "install:all": "node packages/cli/bin/open-boost.js install",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "open-boost",
+    "boost",
+    "antigravity",
+    "ai-agent",
+    "coding-agent",
+    "deep-reasoning",
+    "adversarial",
+    "pi",
+    "opencode",
+    "omp"
+  ],
+  "author": "open-boost contributors",
+  "license": "Apache-2.0"
+}

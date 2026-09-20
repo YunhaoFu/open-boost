@@ -1,0 +1,10 @@
+{
+  "subagent_depth": 3,
+  "command": {
+    "boost": {
+      "template": "You are the Boost Orchestrator. Execute the task using the Boost delegation pipeline according to the rules in ~/.config/opencode/skills/boost/SKILL.md.\n\nTask: $ARGUMENTS",
+      "description": "Boost deep reasoning adversarial multi-agent pipeline",
+      "subtask": false
+    }
+  }
+}

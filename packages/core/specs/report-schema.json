@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BoostReportSchema",
+  "description": "Validation schema for Open-Boost adversarial and skepticism reports",
+  "definitions": {
+    "VerificationRecord": {
+      "type": "object",
+      "properties": {
+        "deep": {
+          "type": "string",
+          "description": "Ran actual tests, shell commands, and stdout/stderr output"
+        },
+        "shallow": {
+          "type": "string",
+          "description": "Visual inspection and manual eyeball checks only"
+        },
+        "unverified": {
+          "type": "string",
+          "description": "Exhaustive and honest disclosure of unverified aspects"
+        }
+      },
+      "required": ["deep", "shallow", "unverified"]
+    },
+    "KnownIssue": {
+      "type": "object",
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["Fatal Functional Bug", "Shallow Verification", "Minor Robustness Risk"]
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": ["severity", "description"]
+    },
+    "BreakItRecord": {
+      "type": "object",
+      "properties": {
+        "input": { "type": "string" },
+        "expected": { "type": "string" },
+        "actual": { "type": "string" },
+        "rootCause": { "type": "string" },
+        "fix": { "type": "string" }
+      },
+      "required": ["input", "expected", "actual", "rootCause", "fix"]
+    }
+  }
+}
