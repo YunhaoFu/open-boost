@@ -46,16 +46,23 @@ describe("open-boost test suite", () => {
       assert.ok(fs.existsSync(path.join(tmpDist, "pi", "skills", "boost", "SKILL.md")));
       assert.ok(fs.existsSync(path.join(tmpDist, "pi", "extensions", "open-boost.js")));
       assert.ok(fs.existsSync(path.join(tmpDist, "pi", "extensions", "open-boost.ts")));
+      const piSkill = fs.readFileSync(path.join(tmpDist, "pi", "skills", "boost", "SKILL.md"), "utf8");
+      assert.match(piSkill, /`subagent` tool, agent `boost-coder-coordinator`/);
       const piCoord = fs.readFileSync(path.join(tmpDist, "pi", "agents", "boost-coder-coordinator.md"), "utf8");
       assert.match(piCoord, /allowNestedSubagents: true/);
       assert.match(piCoord, /allowedAgents:/);
+      assert.match(piCoord, /Spawn it with the `subagent` tool/);
 
       // Verify OpenCode files
       assert.ok(fs.existsSync(path.join(tmpDist, "opencode", "skills", "boost", "SKILL.md")));
       assert.ok(fs.existsSync(path.join(tmpDist, "opencode", "commands", "boost.json")));
+      const ocSkill = fs.readFileSync(path.join(tmpDist, "opencode", "skills", "boost", "SKILL.md"), "utf8");
+      assert.match(ocSkill, /`task` tool \(`subagent_type: "boost-coder-coordinator"`\)/);
       const ocCoord = fs.readFileSync(path.join(tmpDist, "opencode", "agents", "boost-coder-coordinator.md"), "utf8");
       assert.match(ocCoord, /mode: subagent/);
       assert.match(ocCoord, /tools: \{\}/);
+      assert.match(ocCoord, /subagent_type: "boost-coder-l0"/);
+      assert.match(ocCoord, /subagent_type: "boost-coder-improvement"/);
 
       const ocInvestL0 = fs.readFileSync(path.join(tmpDist, "opencode", "agents", "boost-investigator-l0.md"), "utf8");
       assert.match(ocInvestL0, /read: true/);

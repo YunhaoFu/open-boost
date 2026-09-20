@@ -39,24 +39,35 @@ export function buildAll(rootDir, outDir) {
   fs.mkdirSync(piSkillsDir, { recursive: true });
   fs.mkdirSync(piExtDir, { recursive: true });
 
-  // In Pi, coordinators allow nested subagents
-  const piCoderCoord = coderCoord.replace(
-    /tools: \[\]/,
-    `tools: []\nallowNestedSubagents: true\nallowedAgents:\n  - boost-coder-l0\n  - boost-coder-improvement`
-  );
-  const piInvestCoord = investCoord.replace(
-    /tools: \[\]/,
-    `tools: []\nallowNestedSubagents: true\nallowedAgents:\n  - boost-investigator-l0\n  - boost-investigator-improvement`
-  );
+  // In Pi, orchestrator and coordinators use `subagent` tool (from pi-subagents)
+  const piOrchestrator = orchestrator
+    .replace(/`task` tool, agent `boost-coder-coordinator`/g, "`subagent` tool, agent `boost-coder-coordinator`")
+    .replace(/`task` tool, agent `boost-investigator-coordinator`/g, "`subagent` tool, agent `boost-investigator-coordinator`")
+    .replace(/Spawn the appropriate coordinator agent with the `task` tool/g, "Spawn the appropriate coordinator agent with the `subagent` tool");
 
-  fs.writeFileSync(path.join(piSkillsDir, "SKILL.md"), orchestrator);
+  const piCoderCoord = coderCoord
+    .replace(
+      /tools: \[\]/,
+      `tools: []\nallowNestedSubagents: true\nallowedAgents:\n  - boost-coder-l0\n  - boost-coder-improvement`
+    )
+    .replace(/Spawn it with the `task` tool/g, "Spawn it with the `subagent` tool")
+    .replace(/The `task` call returns the report/g, "The `subagent` call returns the report");
+
+  const piInvestCoord = investCoord
+    .replace(
+      /tools: \[\]/,
+      `tools: []\nallowNestedSubagents: true\nallowedAgents:\n  - boost-investigator-l0\n  - boost-investigator-improvement`
+    )
+    .replace(/Spawn it with the `task` tool/g, "Spawn it with the `subagent` tool")
+    .replace(/The `task` call returns the report/g, "The `subagent` call returns the report");
+
+  fs.writeFileSync(path.join(piSkillsDir, "SKILL.md"), piOrchestrator);
   fs.writeFileSync(path.join(piAgentsDir, "boost-coder-coordinator.md"), piCoderCoord);
   fs.writeFileSync(path.join(piAgentsDir, "boost-coder-l0.md"), coderL0);
   fs.writeFileSync(path.join(piAgentsDir, "boost-coder-improvement.md"), coderImp);
   fs.writeFileSync(path.join(piAgentsDir, "boost-investigator-coordinator.md"), piInvestCoord);
   fs.writeFileSync(path.join(piAgentsDir, "boost-investigator-l0.md"), investL0);
   fs.writeFileSync(path.join(piAgentsDir, "boost-investigator-improvement.md"), investImp);
-
   // Copy or generate Pi extension (both .js and .ts supported)
   const piExtensionSourceJs = path.join(rootDir, "packages", "adapters", "pi", "index.js");
   const piExtensionSourceTs = path.join(rootDir, "packages", "adapters", "pi", "index.ts");
@@ -74,14 +85,44 @@ export function buildAll(rootDir, outDir) {
   fs.mkdirSync(ocAgentsDir, { recursive: true });
   fs.mkdirSync(ocSkillsDir, { recursive: true });
   fs.mkdirSync(ocCmdsDir, { recursive: true });
-  // OpenCode uses mode: subagent and object-based tools schema
+  // OpenCode uses mode: subagent, object-based tools schema, and task tool with subagent_type & prompt
+  const ocOrchestrator = orchestrator
+    .replace(
+      /`task` tool, agent `boost-coder-coordinator`/g,
+      '`task` tool (`subagent_type: "boost-coder-coordinator"`)'
+    )
+    .replace(
+      /`task` tool, agent `boost-investigator-coordinator`/g,
+      '`task` tool (`subagent_type: "boost-investigator-coordinator"`)'
+    )
+    .replace(
+      /Spawn the appropriate coordinator agent with the `task` tool/g,
+      'Spawn the appropriate coordinator agent with the `task` tool (passing `subagent_type` and `prompt`)'
+    );
+
   const ocCoderCoord = coderCoord
     .replace(/^---/, `---\nmode: subagent`)
-    .replace(/tools: \[\]/, `tools: {}`);
+    .replace(/tools: \[\]/, `tools: {}`)
+    .replace(
+      /Spawn it with the `task` tool, working directory inherited from the current workspace\. Wait for the worker's report\./g,
+      'Spawn it with the `task` tool (passing `subagent_type: "boost-coder-l0"`, `prompt: "..."`, `description: "..."`), working directory inherited from the current workspace. Wait for the worker\'s report.'
+    )
+    .replace(
+      /Spawn it with the `task` tool\. Wait for the report\./g,
+      'Spawn it with the `task` tool (passing `subagent_type: "boost-coder-improvement"`, `prompt: "..."`, `description: "..."`). Wait for the report.'
+    );
 
   const ocInvestCoord = investCoord
     .replace(/^---/, `---\nmode: subagent`)
-    .replace(/tools: \[\]/, `tools: {}`);
+    .replace(/tools: \[\]/, `tools: {}`)
+    .replace(
+      /Spawn it with the `task` tool, working directory inherited from the current workspace\. Wait for the worker's report\./g,
+      'Spawn it with the `task` tool (passing `subagent_type: "boost-investigator-l0"`, `prompt: "..."`, `description: "..."`), working directory inherited from the current workspace. Wait for the worker\'s report.'
+    )
+    .replace(
+      /Spawn it with the `task` tool\. Wait for the report\./g,
+      'Spawn it with the `task` tool (passing `subagent_type: "boost-investigator-improvement"`, `prompt: "..."`, `description: "..."`). Wait for the report.'
+    );
 
   const ocCoderL0 = coderL0
     .replace(/^---/, `---\nmode: subagent`);
@@ -97,14 +138,13 @@ export function buildAll(rootDir, outDir) {
     .replace(/^---/, `---\nmode: subagent`)
     .replace(/tools:\s*\[[\s\S]*?\]/, `tools:\n  read: true\n  grep: true\n  glob: true\n  lsp: true\n  ast_grep: true\n  bash: true`);
 
-  fs.writeFileSync(path.join(ocSkillsDir, "SKILL.md"), orchestrator);
+  fs.writeFileSync(path.join(ocSkillsDir, "SKILL.md"), ocOrchestrator);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-coder-coordinator.md"), ocCoderCoord);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-coder-l0.md"), ocCoderL0);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-coder-improvement.md"), ocCoderImp);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-investigator-coordinator.md"), ocInvestCoord);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-investigator-l0.md"), ocInvestL0);
   fs.writeFileSync(path.join(ocAgentsDir, "boost-investigator-improvement.md"), ocInvestImp);
-
   // OpenCode config patch & command
   const ocPatch = {
     subagent_depth: 3,

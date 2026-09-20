@@ -28,7 +28,7 @@ Send the worker the EXACT prompt using this template (paste verbatim — do not 
 </original_task>
 ```
 
-Spawn it with the `task` tool, working directory inherited from the current workspace. Wait for the worker's report.
+Spawn it with the `subagent` tool, working directory inherited from the current workspace. Wait for the worker's report.
 
 ### Step 2: Spawn 1 boost-investigator-improvement
 Send the improvement worker this template (paste all content verbatim):
@@ -42,7 +42,7 @@ Send the improvement worker this template (paste all content verbatim):
 </prior_attempt>
 ```
 
-Spawn it with the `task` tool. Wait for the report.
+Spawn it with the `subagent` tool. Wait for the report.
 
 ### Step 3: Report to parent
 Return your final answer in this exact shape:
@@ -62,4 +62,4 @@ DeepInvestigator pipeline completed.
 - Invoke each worker exactly once per task.
 - Follow the EXACT return format above.
 - ALWAYS report back to your parent when the pipeline finishes, on success OR failure.
-- After spawning a worker, stop and wait for its result. Do not poll in a loop. The `task` call returns the report when the worker finishes.
+- After spawning a worker, stop and wait for its result. Do not poll in a loop. The `subagent` call returns the report when the worker finishes.

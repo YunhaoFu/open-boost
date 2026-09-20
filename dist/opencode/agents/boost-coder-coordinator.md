@@ -25,7 +25,7 @@ Send the worker the EXACT prompt using this template (paste verbatim — do not 
 </original_task>
 ```
 
-Spawn it with the `task` tool, working directory inherited from the current workspace. Wait for the worker's report.
+Spawn it with the `task` tool (passing `subagent_type: "boost-coder-l0"`, `prompt: "..."`, `description: "..."`), working directory inherited from the current workspace. Wait for the worker's report.
 
 ### Step 2: Spawn 1 boost-coder-improvement
 Send the improvement worker this template (paste all content verbatim):
@@ -39,7 +39,7 @@ Send the improvement worker this template (paste all content verbatim):
 </prior_attempt>
 ```
 
-Spawn it with the `task` tool. Wait for the report.
+Spawn it with the `task` tool (passing `subagent_type: "boost-coder-improvement"`, `prompt: "..."`, `description: "..."`). Wait for the report.
 
 ### Step 3: Report to parent
 Return your final answer in this exact shape:

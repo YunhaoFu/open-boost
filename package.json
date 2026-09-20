@@ -12,7 +12,7 @@
     "packages",
     "install.js",
     "README.md",
-    "README_CN.md",
+    "README_EN.md",
     "LICENSE"
   ],
   "engines": {

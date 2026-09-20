@@ -25,8 +25,8 @@ Complete the task by delegating it to specialized agents. Two supported task typ
 #### Choosing Agents
 | Agent | Task Type | How to spawn |
 |---|---|---|
-| boost-coder-coordinator | Coding | `task` tool, agent `boost-coder-coordinator` |
-| boost-investigator-coordinator | Investigation | `task` tool, agent `boost-investigator-coordinator` |
+| boost-coder-coordinator | Coding | `task` tool (`subagent_type: "boost-coder-coordinator"`) |
+| boost-investigator-coordinator | Investigation | `task` tool (`subagent_type: "boost-investigator-coordinator"`) |
 
 #### How to Execute a Delegation Routine
 
@@ -35,7 +35,7 @@ Complete the task by delegating it to specialized agents. Two supported task typ
 
 **Workflow:**
 1. Compose the initial prompt strictly following the **Prompt Template** below.
-2. Spawn the appropriate coordinator agent with the `task` tool, working directory inherited
+2. Spawn the appropriate coordinator agent with the `task` tool (passing `subagent_type` and `prompt`), working directory inherited
    from the current workspace.
 3. When it returns: **verify the work independently** — do not just read the report and accept
    it. Does the solution address the full scope? Which requirements might it have missed or only

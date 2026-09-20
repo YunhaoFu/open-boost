@@ -66,7 +66,7 @@ export default function registerOpenBoostExtension(pi: ExtensionAPI): void {
         `Task: ${task}`,
         ``,
         `Routines: Delegation Routine.`,
-        `Spawn coordinator: ${targetCoordinator}`,
+        `Spawn coordinator: ${targetCoordinator} using the subagent tool ({ agent: "${targetCoordinator}", task: "..." }).`,
         `Follow strictly the Skepticism Reporting Protocol.`
       ].join("\n");
 
