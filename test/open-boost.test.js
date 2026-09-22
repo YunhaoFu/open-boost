@@ -106,6 +106,16 @@ describe("open-boost test suite", () => {
       assert.strictEqual(res2.changed, true);
       const updated2 = fs.readFileSync(noTaskCfg, "utf8");
       assert.match(updated2, /task:\n  maxRecursionDepth: 3\n  maxConcurrency: 4\n  softRequestBudget: 120\n  maxRuntimeMs: 1200000/);
+
+      // Case 3: task section followed by subsequent top-level block
+      const multiSectionCfg = path.join(tmpDir, "config-multi.yml");
+      fs.writeFileSync(multiSectionCfg, "setupVersion: 2\ntask:\n  maxRecursionDepth: 2\ncomposer:\n  shape: claude\n");
+      const res3 = patchOmpConfig(multiSectionCfg);
+      assert.strictEqual(res3.changed, true);
+      const updated3 = fs.readFileSync(multiSectionCfg, "utf8");
+      assert.match(updated3, /task:\n  maxRecursionDepth: 3\n  maxConcurrency: 4\n  softRequestBudget: 120\n  maxRuntimeMs: 1200000/);
+      assert.match(updated3, /composer:\n  shape: claude/);
+      assert.strictEqual(patchOmpConfig(multiSectionCfg).changed, false);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
