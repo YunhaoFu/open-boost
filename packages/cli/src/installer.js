@@ -156,7 +156,7 @@ export function installHarness(harness, distDir, paths) {
       // 3. Patch config
       const configFile = path.join(paths.configDir, "config.yml");
       patchOmpConfig(configFile);
-      filesInstalled.push(configFile + " (recursion depth verified >= 3)");
+      filesInstalled.push(configFile + " (task limits verified: depth>=3, concurrency>=4, budget>=120, runtime>=1200000)");
     } else if (harness === "pi") {
       // 1. Copy extension
       if (paths.extensionsDir) {

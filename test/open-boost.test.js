@@ -39,9 +39,17 @@ describe("open-boost test suite", () => {
       // Verify OMP files
       assert.ok(fs.existsSync(path.join(tmpDist, "omp", "skills", "boost", "SKILL.md")));
       assert.ok(fs.existsSync(path.join(tmpDist, "omp", "agents", "boost-coder-coordinator.md")));
+      const ompSkill = fs.readFileSync(path.join(tmpDist, "omp", "skills", "boost", "SKILL.md"), "utf8");
+      assert.match(ompSkill, /tasks: \[\{ agent: "boost-coder-coordinator", task: "\.\.\." \}\]/);
+      assert.match(ompSkill, /Plan & Review/);
       const ompCoord = fs.readFileSync(path.join(tmpDist, "omp", "agents", "boost-coder-coordinator.md"), "utf8");
       assert.match(ompCoord, /tools: \[\]/);
-
+      assert.match(ompCoord, /tasks: \[\{ agent: "boost-coder-l0", task: "\.\.\." \}\]/);
+      assert.match(ompCoord, /Budget & Pacing Awareness/);
+      const ompInvestL0 = fs.readFileSync(path.join(tmpDist, "omp", "agents", "boost-investigator-l0.md"), "utf8");
+      assert.match(ompInvestL0, /tools: \[read, grep, glob, bash\]/);
+      assert.doesNotMatch(ompInvestL0, /lsp/);
+      assert.doesNotMatch(ompInvestL0, /ast_grep/);
       // Verify Pi files
       assert.ok(fs.existsSync(path.join(tmpDist, "pi", "skills", "boost", "SKILL.md")));
       assert.ok(fs.existsSync(path.join(tmpDist, "pi", "extensions", "open-boost.js")));
@@ -72,16 +80,32 @@ describe("open-boost test suite", () => {
     }
   });
 
-  it("patchOmpConfig ensures maxRecursionDepth >= 3", () => {
+  it("patchOmpConfig ensures task limits (depth >= 3, concurrency >= 4, budget >= 120, runtime >= 1200000)", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omp-cfg-test-"));
     const cfgPath = path.join(tmpDir, "config.yml");
     try {
-      fs.writeFileSync(cfgPath, "task:\n  maxRecursionDepth: 1\n");
+      // Case 1: task section with lower values and missing keys
+      fs.writeFileSync(cfgPath, "task:\n  maxRecursionDepth: 1\n  softRequestBudget: 100\n  maxRuntimeMs: 900000\n");
       const { changed } = patchOmpConfig(cfgPath);
       assert.strictEqual(changed, true);
 
-      const updated = fs.readFileSync(cfgPath, "utf8");
+      let updated = fs.readFileSync(cfgPath, "utf8");
       assert.match(updated, /maxRecursionDepth: 3/);
+      assert.match(updated, /maxConcurrency: 4/);
+      assert.match(updated, /softRequestBudget: 120/);
+      assert.match(updated, /maxRuntimeMs: 1200000/);
+
+      // Idempotency: second run should not change anything
+      const secondRun = patchOmpConfig(cfgPath);
+      assert.strictEqual(secondRun.changed, false);
+
+      // Case 2: empty/no task section
+      const noTaskCfg = path.join(tmpDir, "config-empty.yml");
+      fs.writeFileSync(noTaskCfg, "setupVersion: 2\n");
+      const res2 = patchOmpConfig(noTaskCfg);
+      assert.strictEqual(res2.changed, true);
+      const updated2 = fs.readFileSync(noTaskCfg, "utf8");
+      assert.match(updated2, /task:\n  maxRecursionDepth: 3\n  maxConcurrency: 4\n  softRequestBudget: 120\n  maxRuntimeMs: 1200000/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -131,11 +155,13 @@ describe("open-boost test suite", () => {
     assert.match(orchestrator, /Delegation Routine/);
     assert.match(orchestrator, /No Pre-work/);
     assert.match(orchestrator, /\*\*Task\*\*/);
+    assert.match(orchestrator, /Plan & Review/);
 
     const coderL0 = fs.readFileSync(path.join(promptsDir, "boost-coder-l0.md"), "utf8");
     assert.match(coderL0, /Skepticism Disclaimer/);
     assert.match(coderL0, /Verification Record/);
     assert.match(coderL0, /Deep Verification/);
+    assert.match(coderL0, /Budget Pacing/);
 
     const coderImp = fs.readFileSync(path.join(promptsDir, "boost-coder-improvement.md"), "utf8");
     assert.match(coderImp, /Step 1.*Understand the task independently/);

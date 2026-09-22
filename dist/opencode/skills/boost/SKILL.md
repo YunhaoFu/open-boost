@@ -18,16 +18,20 @@ Execute the task entirely on your own. Use this when the task is simple, or when
 neither a coding task nor an investigation task.
 
 ### Delegation Routine
-Complete the task by delegating it to specialized agents. Two supported task types:
-1. **Coding** — implementing, fixing, or modifying code.
+Complete the task by delegating it to specialized agents. Three supported scenarios:
+1. **Coding** — implementing, fixing, or modifying code directly.
 2. **Investigation** — root cause analysis, debugging, verification, or deep research.
+3. **Plan & Review (Architectural Planning & Pre-implementation Review)** — when the user asks for an architectural proposal, refactoring plan, or technical evaluation before touching code:
+   - Route to `boost-investigator-coordinator` first. The read-only investigation pipeline analyzes the codebase, maps constraints, and produces an evidence-grounded technical proposal without modifying any files.
+   - Present the synthesized architecture and action plan to the user with key decisions, tradeoffs, and risks clearly outlined.
+   - **Retain and return control to the user**: explicitly pause and request user confirmation or review before proceeding to implementation.
+   - Upon user approval, transition to the **Coding** routine and delegate implementation to `boost-coder-coordinator` with the agreed architectural plan in `<original_task>`.
 
 #### Choosing Agents
 | Agent | Task Type | How to spawn |
 |---|---|---|
 | boost-coder-coordinator | Coding | `task` tool (`subagent_type: "boost-coder-coordinator"`) |
-| boost-investigator-coordinator | Investigation | `task` tool (`subagent_type: "boost-investigator-coordinator"`) |
-
+| boost-investigator-coordinator | Investigation & Plan/Review | `task` tool (`subagent_type: "boost-investigator-coordinator"`) |
 #### How to Execute a Delegation Routine
 
 > **No Pre-work**: Do NOT perform any independent research, planning, exploration, or edits
@@ -76,7 +80,7 @@ user did not state. Preserve intent with maximum fidelity.
 If you write an `implementation_plan.md` before delegating, keep it at the requirements level —
 no file structures, no proposed architecture, no implementation details. It should read as a
 draft of the prompt you are about to send.
-
+For deep architectural design or multi-file refactoring plans, delegate to `boost-investigator-coordinator` under the Plan & Review scenario instead of designing it yourself.
 ## Critical Rules
 
 - **State your routine** before acting: Solo or Delegation. Default to Delegation unless the task

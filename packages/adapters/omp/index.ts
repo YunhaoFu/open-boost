@@ -2,7 +2,9 @@
  * Open-Boost OMP Adapter
  *
  * Configures Oh My Pi (OMP) to support Boost:
- * 1. Ensures task.maxRecursionDepth >= 3 in ~/.omp/agent/config.yml
+ * 1. Ensures task.maxRecursionDepth >= 3, task.maxConcurrency >= 4,
+ *    task.softRequestBudget >= 120, and task.maxRuntimeMs >= 1200000
+ *    in ~/.omp/agent/config.yml
  * 2. Installs skill and 6 agent markdown definitions
  */
 
@@ -17,23 +19,36 @@ export function patchOmpConfig(configPath: string): { changed: boolean } {
   let content = fs.readFileSync(configPath, "utf8");
   let changed = false;
 
-  // Check if maxRecursionDepth is present
-  const depthMatch = content.match(/maxRecursionDepth:\s*(\d+)/);
-  if (depthMatch) {
-    const currentDepth = parseInt(depthMatch[1], 10);
-    if (currentDepth < 3) {
-      content = content.replace(/maxRecursionDepth:\s*\d+/, "maxRecursionDepth: 3");
+  const targets = [
+    { key: "maxRecursionDepth", min: 3 },
+    { key: "maxConcurrency", min: 4 },
+    { key: "softRequestBudget", min: 120 },
+    { key: "maxRuntimeMs", min: 1200000 },
+  ];
+
+  if (/^task:/m.test(content)) {
+    const missing: Array<{ key: string; min: number }> = [];
+    for (const { key, min } of targets) {
+      const keyRegex = new RegExp(`^(\\s+)${key}:\\s*(\\d+)`, "m");
+      const match = content.match(keyRegex);
+      if (match) {
+        const currentVal = parseInt(match[2], 10);
+        if (currentVal < min) {
+          content = content.replace(keyRegex, `$1${key}: ${min}`);
+          changed = true;
+        }
+      } else {
+        missing.push({ key, min });
+      }
+    }
+    if (missing.length > 0) {
+      const addition = missing.map((t) => `\n  ${t.key}: ${t.min}`).join("");
+      content = content.replace(/^task:.*$/m, `$&${addition}`);
       changed = true;
     }
   } else {
-    // Inject into task section or at root
-    if (/^task:/m.test(content)) {
-      content = content.replace(/^task:.*$/m, "$&\n  maxRecursionDepth: 3");
-      changed = true;
-    } else {
-      content += "\ntask:\n  maxRecursionDepth: 3\n  maxConcurrency: 4\n";
-      changed = true;
-    }
+    content += "\ntask:\n  maxRecursionDepth: 3\n  maxConcurrency: 4\n  softRequestBudget: 120\n  maxRuntimeMs: 1200000\n";
+    changed = true;
   }
 
   if (changed) {

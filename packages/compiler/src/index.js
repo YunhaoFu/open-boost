@@ -23,11 +23,46 @@ export function buildAll(rootDir, outDir) {
   fs.mkdirSync(ompSkillsDir, { recursive: true });
   fs.mkdirSync(ompAgentsDir, { recursive: true });
 
-  fs.writeFileSync(path.join(ompSkillsDir, "SKILL.md"), orchestrator);
-  fs.writeFileSync(path.join(ompAgentsDir, "boost-coder-coordinator.md"), coderCoord);
+  // In OMP, explicitly inject task tool schema: { context: "...", tasks: [{ agent: "...", task: "..." }] }
+  const ompOrchestrator = orchestrator
+    .replace(
+      /`task` tool, agent `boost-coder-coordinator`/g,
+      '`task` tool (`tasks: [{ agent: "boost-coder-coordinator", task: "..." }]`)'
+    )
+    .replace(
+      /`task` tool, agent `boost-investigator-coordinator`/g,
+      '`task` tool (`tasks: [{ agent: "boost-investigator-coordinator", task: "..." }]`)'
+    )
+    .replace(
+      /Spawn the appropriate coordinator agent with the `task` tool/g,
+      'Spawn the appropriate coordinator agent with the `task` tool (calling `task({ context: "...", tasks: [{ agent: "...", task: "..." }] })`)'
+    );
+
+  const ompCoderCoord = coderCoord
+    .replace(
+      /Spawn it with the `task` tool, working directory inherited from the current workspace\. Wait for the worker's report\./g,
+      'Spawn it with the `task` tool (calling `task({ context: "Boost coding L0", tasks: [{ agent: "boost-coder-l0", task: "..." }] })`), working directory inherited from the current workspace. Wait for the worker\'s report.'
+    )
+    .replace(
+      /Spawn it with the `task` tool\. Wait for the report\./g,
+      'Spawn it with the `task` tool (calling `task({ context: "Boost coding adversarial improvement", tasks: [{ agent: "boost-coder-improvement", task: "..." }] })`). Wait for the report.'
+    );
+
+  const ompInvestCoord = investCoord
+    .replace(
+      /Spawn it with the `task` tool, working directory inherited from the current workspace\. Wait for the worker's report\./g,
+      'Spawn it with the `task` tool (calling `task({ context: "Boost investigation L0", tasks: [{ agent: "boost-investigator-l0", task: "..." }] })`), working directory inherited from the current workspace. Wait for the worker\'s report.'
+    )
+    .replace(
+      /Spawn it with the `task` tool\. Wait for the report\./g,
+      'Spawn it with the `task` tool (calling `task({ context: "Boost investigation adversarial improvement", tasks: [{ agent: "boost-investigator-improvement", task: "..." }] })`). Wait for the report.'
+    );
+
+  fs.writeFileSync(path.join(ompSkillsDir, "SKILL.md"), ompOrchestrator);
+  fs.writeFileSync(path.join(ompAgentsDir, "boost-coder-coordinator.md"), ompCoderCoord);
   fs.writeFileSync(path.join(ompAgentsDir, "boost-coder-l0.md"), coderL0);
   fs.writeFileSync(path.join(ompAgentsDir, "boost-coder-improvement.md"), coderImp);
-  fs.writeFileSync(path.join(ompAgentsDir, "boost-investigator-coordinator.md"), investCoord);
+  fs.writeFileSync(path.join(ompAgentsDir, "boost-investigator-coordinator.md"), ompInvestCoord);
   fs.writeFileSync(path.join(ompAgentsDir, "boost-investigator-l0.md"), investL0);
   fs.writeFileSync(path.join(ompAgentsDir, "boost-investigator-improvement.md"), investImp);
 

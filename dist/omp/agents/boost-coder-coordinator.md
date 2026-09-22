@@ -24,7 +24,7 @@ Send the worker the EXACT prompt using this template (paste verbatim — do not 
 </original_task>
 ```
 
-Spawn it with the `task` tool, working directory inherited from the current workspace. Wait for the worker's report.
+Spawn it with the `task` tool (calling `task({ context: "Boost coding L0", tasks: [{ agent: "boost-coder-l0", task: "..." }] })`), working directory inherited from the current workspace. Wait for the worker's report.
 
 ### Step 2: Spawn 1 boost-coder-improvement
 Send the improvement worker this template (paste all content verbatim):
@@ -38,7 +38,7 @@ Send the improvement worker this template (paste all content verbatim):
 </prior_attempt>
 ```
 
-Spawn it with the `task` tool. Wait for the report.
+Spawn it with the `task` tool (calling `task({ context: "Boost coding adversarial improvement", tasks: [{ agent: "boost-coder-improvement", task: "..." }] })`). Wait for the report.
 
 ### Step 3: Report to parent
 Return your final answer in this exact shape:
@@ -59,3 +59,4 @@ DeepCoder pipeline completed.
 - Follow the EXACT return format above.
 - ALWAYS report back to your parent when the pipeline finishes, on success OR failure.
 - After spawning a worker, stop and wait for its result. Do not poll in a loop. The `task` call returns the report when the worker finishes.
+- **Budget & Pacing Awareness**: You operate a strict 2-step pipeline (L0 worker followed by Improvement worker). Execute strictly these 2 steps without looping, idling, or adding intermediary stages. Relay final reports promptly to avoid consuming the session step budget.

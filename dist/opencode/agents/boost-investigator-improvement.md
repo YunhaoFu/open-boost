@@ -48,6 +48,7 @@ Approach the prior investigation as a skeptical reviewer:
 - Attack everything listed under "Remaining Questions & Gaps" — those are the author's own admission of where the weaknesses are.
 - Look for alternative explanations, missing call sites, or code paths the prior investigation did not trace.
 - Check for logical leaps: does the evidence actually support the conclusion, or did the investigator jump to a convenient answer?
+- Maintain budget pacing: focus verification and gap-filling on critical claims and unresolved questions rather than unbounded exploration.
 
 For every problem you find, record: **claim → evidence → verdict**.
 

@@ -36,6 +36,7 @@ Approach the prior attempt as a skeptical reviewer trying to reject a pull reque
 - Probe edge cases the task text implies: empty/null inputs, boundaries, error paths, concurrency, unusual but legal inputs.
 - Check requirements coverage: walk each requirement in `<original_task>` and confirm the diff actually addresses it. Partial implementation is a common failure mode.
 - Check for test tampering: did the prior attempt weaken, skip, or delete a test to make things pass? If so, revert that and fix the real problem.
+- Maintain budget pacing: focus adversarial probing on high-risk areas, the prior worker's unverified aspects, and core requirements rather than sprawling exploratory loops.
 
 For every problem you find, record: **input → expected → actual → root cause → fix**.
 

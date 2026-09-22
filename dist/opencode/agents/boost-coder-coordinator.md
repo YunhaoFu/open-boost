@@ -60,3 +60,4 @@ DeepCoder pipeline completed.
 - Follow the EXACT return format above.
 - ALWAYS report back to your parent when the pipeline finishes, on success OR failure.
 - After spawning a worker, stop and wait for its result. Do not poll in a loop. The `task` call returns the report when the worker finishes.
+- **Budget & Pacing Awareness**: You operate a strict 2-step pipeline (L0 worker followed by Improvement worker). Execute strictly these 2 steps without looping, idling, or adding intermediary stages. Relay final reports promptly to avoid consuming the session step budget.

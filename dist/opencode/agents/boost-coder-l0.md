@@ -29,6 +29,7 @@ If `<original_task>` is missing or empty, do not guess. Report the problem immed
 - **Do not weaken tests to pass.** Never modify, skip, or delete an existing test to make your change look successful. If an existing test now fails, that is a signal about your change.
 - **Do not special-case the test.** Solve the general problem.
 - **Keep the diff focused.** Unrelated refactors add regression risk.
+- **Budget Pacing & Step Convergence.** Be mindful of the harness step/tool budget (such as `softRequestBudget`). Locate relevant code using targeted, surgical searches rather than broad directory walks. Avoid exploratory loops or repeated redundant tool calls. Implement changes and verify them decisively so ample budget headroom remains for the improvement stage.
 
 ## Reporting
 
